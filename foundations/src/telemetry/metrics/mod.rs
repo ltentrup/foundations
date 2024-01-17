@@ -376,3 +376,49 @@ impl MetricConstructor<TimeHistogram> for HistogramBuilder {
         TimeHistogram::new(self.buckets.iter().cloned())
     }
 }
+
+/// Increments a gauge metric when created, and decrements it when dropped.
+pub struct GaugeGuard<G: GenericGauge>(G);
+
+impl<G: GenericGauge> GaugeGuard<G> {
+    /// Creates a new GaugeGuard to increment the Gauge metric and automatically decrement it when dropped.
+    pub fn new(gauge: G) -> Self {
+        gauge.inc();
+        Self(gauge)
+    }
+}
+
+impl<G: GenericGauge> Drop for GaugeGuard<G> {
+    fn drop(&mut self) {
+        self.0.dec();
+    }
+}
+
+/// Helper trait for GaugeGuard to wrap a gauge with an automatically incrementing/decrementing
+/// behaviour.
+pub trait GenericGauge {
+    /// Wraps the inc() method of a Gauge.
+    fn inc(&self);
+    /// Wraps the dec() method of a Gauge.
+    fn dec(&self);
+}
+
+impl GenericGauge for Gauge {
+    fn inc(&self) {
+        Gauge::inc(self);
+    }
+
+    fn dec(&self) {
+        Gauge::dec(self);
+    }
+}
+
+impl GenericGauge for RangeGauge {
+    fn inc(&self) {
+        RangeGauge::inc(self);
+    }
+
+    fn dec(&self) {
+        RangeGauge::dec(self);
+    }
+}
