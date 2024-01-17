@@ -21,8 +21,11 @@ pub(super) mod init;
 #[doc(hidden)]
 pub mod internal;
 
+mod gauge;
+
 use internal::{ErasedInfoMetric, Registries};
 
+pub use gauge::RangeGauge;
 pub use prometheus_client::metrics::family::MetricConstructor;
 pub use prometheus_client::metrics::gauge::Gauge;
 pub use prometheus_client::metrics::histogram::Histogram;
